@@ -14,9 +14,9 @@ namespace SyntaxAnalysis_api.Controllers
         private readonly DatabaseContext context = new DatabaseContext();
         // GET api/values
         [HttpGet]
-        public string Get()
+        public IActionResult Get()
         {
-            return context.Flexes.First().digit;
+            return Ok(new { data = context.Flexes.First().digit });
         }
 
         // GET api/values/5

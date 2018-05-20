@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using SyntaxAnalysis_api.Models;
 
 namespace SyntaxAnalysis_api.Controllers
 {
@@ -28,8 +29,59 @@ namespace SyntaxAnalysis_api.Controllers
 
         // POST api/values
         [HttpPost]
-        public void Post([FromBody]string value)
+        public List<ResponseModel> Post([FromBody] TextModel textModel)
         {
+            if (textModel == null)
+            {
+                throw new ArgumentNullException(nameof(textModel));
+            }
+
+            List<ResponseModel> info = new List<ResponseModel>();
+            foreach (string word in textModel.Text)
+            {
+                Nom nom = GetNomEntity(word);
+                if (nom != null)
+                {
+                    textModel.Text.Append(nom.reestr);
+                }
+            }
+            return textModel.Text;
+        }
+
+        public Nom GetNomEntity(string word)
+        {
+            IQueryable<Nom> noms = context.Nom1.Where(x => x.reestr.Contains(word.ToLower()));
+            if (noms == null)
+            {
+                return GetNomEntity(word.Remove(word.Length - 1));
+            }
+            else
+            {
+                foreach (Nom nom in noms)
+                {
+                    var newWord = nom.reestr.Remove(nom.reestr.Length - context.Indents.FirstOrDefault(x => x.type == nom.type).indent);
+                    var res = GetAllPossibleFlexes(newWord, context.Flexes.Where(x => x.type == nom.type).ToList());
+                }
+            }
+        }
+
+        public string GetAllPossibleFlexes(string word, List<Flex> flexes)
+        {
+            string word_right = "";
+            foreach(Flex flex in flexes)
+            {
+                var new_nom = CheckIfWordContainsInTable(word + flex.flex);
+                if (new_nom != null)
+                {
+                    word_right = new_nom.reestr;
+                }
+            }
+            return word_right;
+        }
+
+        public Nom CheckIfWordContainsInTable(string word)
+        {
+            return context.Nom1.FirstOrDefault(x => x.reestr == word.ToLower());
         }
 
         // PUT api/values/5

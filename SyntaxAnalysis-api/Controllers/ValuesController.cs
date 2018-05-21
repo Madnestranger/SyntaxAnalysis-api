@@ -42,16 +42,20 @@ namespace SyntaxAnalysis_api.Controllers
                 Nom nom = GetNomEntity(word);
                 if (nom != null)
                 {
-                    textModel.Text.Append(nom.reestr);
+                    info.Add(new ResponseModel { part = context.Parts.FirstOrDefault(x => x.id == nom.part).com, comment = nom.field5});
+                } else
+                {
+                    info.Add(new ResponseModel { });
                 }
             }
-            return textModel.Text;
+            return info;
         }
 
         public Nom GetNomEntity(string word)
         {
+            Nom result = null;
             IQueryable<Nom> noms = context.Nom1.Where(x => x.reestr.Contains(word.ToLower()));
-            if (noms == null)
+            if (noms == null || noms.Count() == 0)
             {
                 return GetNomEntity(word.Remove(word.Length - 1));
             }
@@ -59,29 +63,49 @@ namespace SyntaxAnalysis_api.Controllers
             {
                 foreach (Nom nom in noms)
                 {
-                    var newWord = nom.reestr.Remove(nom.reestr.Length - context.Indents.FirstOrDefault(x => x.type == nom.type).indent);
-                    var res = GetAllPossibleFlexes(newWord, context.Flexes.Where(x => x.type == nom.type).ToList());
+                    Indents indentOfNewWord = context.Indents.FirstOrDefault(x => x.type == nom.@type);
+                    IQueryable<Flex> flexes = context.Flexes.Where(x => x.type == nom.type);
+                    string newWord = String.Empty;
+                    if (indentOfNewWord.indent > 0)
+                    {
+                        newWord = nom.reestr.Remove(nom.reestr.Length - indentOfNewWord.indent);
+                    } else
+                    {
+                        newWord = nom.reestr;
+                    }
+                    Nom res = GetAllPossibleFlexes(newWord, flexes.ToList(), word, nom.reestr);
+                    if (res != null && res.reestr != null)
+                    {
+                        result = res;
+                        break;
+                    }
                 }
             }
+            if (result == null && word.Length > 1)
+            {
+                return GetNomEntity(word.Remove(word.Length - 1));
+            }
+            return result;
         }
 
-        public string GetAllPossibleFlexes(string word, List<Flex> flexes)
+        public Nom GetAllPossibleFlexes(string word, List<Flex> flexes, string result_word, string cur_nom_reestr)
         {
-            string word_right = "";
+            Nom nom = new Nom();
             foreach(Flex flex in flexes)
             {
-                var new_nom = CheckIfWordContainsInTable(word + flex.flex);
-                if (new_nom != null)
+                var new_nom = word + flex.flex == result_word;
+                if (new_nom == true)
                 {
-                    word_right = new_nom.reestr;
+                    nom = GetNomByReestr(cur_nom_reestr);
+                    break;
                 }
             }
-            return word_right;
+            return nom;
         }
 
-        public Nom CheckIfWordContainsInTable(string word)
+        public Nom GetNomByReestr(string wordWithFlex)
         {
-            return context.Nom1.FirstOrDefault(x => x.reestr == word.ToLower());
+            return context.Nom1.FirstOrDefault(x => x.reestr == wordWithFlex);
         }
 
         // PUT api/values/5

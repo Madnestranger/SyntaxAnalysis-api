@@ -7,7 +7,7 @@ public class DatabaseContext : DbContext
     public DbSet<Flex> Flexes { get; set; }
     public DbSet<Nom> Nom1 { get; set; }
     public DbSet<Indents> Indents { get; set; }
-    public DbSet<Part> Part { get; set; }
+    public DbSet<Part> Parts { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

@@ -9,9 +9,9 @@ namespace SyntaxAnalysis_api.Models
     {
         public int id { get; set; }
         public string flex { get; set; }
-        public int field2 { get; set; }
+        public int? field2 { get; set; }
         public string xmpl { get; set; }
-        public int type { get; set; }
+        public int? type { get; set; }
         public string digit { get; set; }
     }
 }

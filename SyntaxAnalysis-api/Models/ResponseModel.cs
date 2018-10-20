@@ -9,5 +9,6 @@ namespace SyntaxAnalysis_api.Models
     {
         public string part { get; set; }
         public string comment { get; set; }
+        public string part_of_speech { get; set; }
     }
 }

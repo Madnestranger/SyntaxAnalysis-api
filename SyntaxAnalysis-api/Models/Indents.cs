@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SyntaxAnalysis_api.Models
 {
-    public class Indents
+    public class Indent
     {
         [Key]
         public int type { get; set; }
